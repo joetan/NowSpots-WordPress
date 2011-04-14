@@ -1,0 +1,34 @@
+<?php if (!$submit) $submit = 'Submit'; ?>
+<form method="post">
+<input type="hidden" name="action" value="<?php echo $action;?>" />
+
+<h3>1. Advertiser Basics</h3>
+Advertiser Name: <input type="text" name="Name" />
+
+<h3>2. Advertiser's social media accounts</h3>
+
+<table>
+<thead>
+<tr>
+	<th>Account Type</th>
+	<th>Nickname</th>
+	<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="new">
+	<td>
+	<select name="SocialMediaAccount[Type][]">
+		<option value="">(Select One)</option>
+		<option value="Facebook">Facebook</option>
+		<option value="Twitter">Twitter</option>
+	</select>
+	</td>
+	<td><input type="text" name="SocialMediaAccount[Name][]"></td>
+	<td><input type="text" name="SocialMediaAccount[URL][]"></td>
+</tr>
+</tbody>
+</table>
+
+<input type="submit" value="<?php echo $submit;?>" />
+</form>

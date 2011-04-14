@@ -1,0 +1,40 @@
+<a href="<?php echo add_query_arg(array('action' => 'add'));?>">Add New Advertiser</a>
+
+<h1>Advertisers</h1>
+
+<table>
+<thead>
+<tr>
+	<th>Name</th>
+	<th>Date Created</th>
+	<th>Services</th>
+	<th>Status</th>
+	<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<?php foreach ($advertisers as $advertiser):?>
+<tr>
+	<td><?php echo $advertiser->Name;?></td>
+	<td><?php echo $advertiser->CreatedDate;?></td>
+	<td><?php pr($advertiser->getServices());?></td>
+	<td><?php echo $advertiser->Status;?></td>
+	<td>
+		<a href="<?php echo add_query_arg(array('action' => 'edit', 'id' => $advertiser->id));?>">Edit</a>
+		<?php if ($advertiser->Status == 'Active') {
+			$statusAction = 'deactivate';
+		} else {
+			$statusAction = 'activate';
+		}
+		?>
+		<a href="<?php echo add_query_arg(array('action' => $statusAction, 'id' => $advertiser->id));?>" onclick="return confirm('Are you sure you want to <?php echo $statusAction;?> this advertiser?')"><?php echo ucwords($statusAction);?></a>
+	
+	</td>
+	
+	
+</tr>
+
+<?php endforeach;?>
+</tbody>
+</table>
+
