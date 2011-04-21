@@ -1,6 +1,8 @@
+<div class="wrap">
+<h2>Advertisers</h2>
+
 <a href="<?php echo add_query_arg(array('action' => 'add'));?>">Add New Advertiser</a>
 
-<h1>Advertisers</h1>
 
 <table>
 <thead>
@@ -17,7 +19,13 @@
 <tr>
 	<td><?php echo $advertiser->Name;?></td>
 	<td><?php echo $advertiser->CreatedDate;?></td>
-	<td><?php pr($advertiser->getServices());?></td>
+	<td>
+	<ul>
+	<?php foreach($advertiser->getServices() as $service):?>
+	<li><a href="<?php echo $service->URL;?>"><?php echo $service->Name;?> (<?php echo $service->Type;?>)</a></li>
+	<?php endforeach;?>
+	</ul>
+	</td>
 	<td><?php echo $advertiser->Status;?></td>
 	<td>
 		<a href="<?php echo add_query_arg(array('action' => 'edit', 'id' => $advertiser->id));?>">Edit</a>
@@ -38,3 +46,4 @@
 </tbody>
 </table>
 
+</div>

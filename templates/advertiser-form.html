@@ -1,22 +1,47 @@
 <?php if (!$submit) $submit = 'Submit'; ?>
 <form method="post">
 <input type="hidden" name="action" value="<?php echo $action;?>" />
+<?php if ($advertiser->id):?><input type="hidden" name="id" value="<?php echo esc_attr($advertiser->id);?>" /><?php endif;?>
 
 <h3>1. Advertiser Basics</h3>
-Advertiser Name: <input type="text" name="Name" />
+Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($advertiser->Name);?>" />
 
 <h3>2. Advertiser's social media accounts</h3>
 
-<table>
+<table id="accounts">
 <thead>
 <tr>
 	<th>Account Type</th>
 	<th>Nickname</th>
 	<th>URL</th>
+	<th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="new">
+<?php foreach ($advertiser->getServices() as $service):?>
+<tr>
+<input type="hidden" name="SocialMediaAccount[id][]" value="<?php echo esc_attr($service->id);?>">
+<input type="hidden" name="SocialMediaAccount[Status][]" value="<?php echo esc_attr($service->Status);?>" class="status">
+	<td>
+	<select name="SocialMediaAccount[Type][]">
+		<option value="">(Select One)</option>
+		<option value="Facebook" <?php if ($service->Type=='Facebook') echo 'selected="SELECTED"';?>>Facebook</option>
+		<option value="Twitter" <?php if ($service->Type=='Twitter') echo 'selected="SELECTED"';?>>Twitter</option>
+	</select>
+	</td>
+	<td><input type="text" name="SocialMediaAccount[Name][]" value="<?php echo esc_attr($service->Name);?>"></td>
+	<td><input type="text" name="SocialMediaAccount[URL][]" value="<?php echo esc_attr($service->URL);?>"></td>
+	<td>
+	<?php if ($service->Status == 'Active'):?>
+	<input type="button" class="button deactivate"  value="Deactivate" />
+	<?php endif;?>
+	</td>
+</tr>
+
+<?php endforeach;?>
+<tr>
+<input type="hidden" name="SocialMediaAccount[id][]" value="">
+<input type="hidden" name="SocialMediaAccount[Status][]" value="">
 	<td>
 	<select name="SocialMediaAccount[Type][]">
 		<option value="">(Select One)</option>
@@ -26,9 +51,29 @@ Advertiser Name: <input type="text" name="Name" />
 	</td>
 	<td><input type="text" name="SocialMediaAccount[Name][]"></td>
 	<td><input type="text" name="SocialMediaAccount[URL][]"></td>
+	<td id="duplicate"><input type="button" class="button"  value="Add Another" /></td>
 </tr>
 </tbody>
 </table>
-
-<input type="submit" value="<?php echo $submit;?>" />
+<p>
+<input type="submit" value="<?php echo $submit;?>" class="button button-primary" />
+</p>
 </form>
+
+<script>
+jQuery(function($) {
+	$('#accounts').find('#duplicate').click(function() {
+		var orig = $(this).closest('tr')
+		
+		var dupe = orig.find('#duplicate').detach();
+		var tr = orig.clone();
+		tr.find(':input').val('')
+		tr.append(dupe);
+		
+		$('#accounts tbody').append(tr);
+	}).end().find('input.deactivate').click(function() {
+		
+		if (confirm('Are you sure you want to deactivate this service?')) $(this).closest('tr').hide().find('input.status').val('Inactive');
+	});
+});
+</script>

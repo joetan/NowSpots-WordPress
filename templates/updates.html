@@ -1,0 +1,36 @@
+<div class="wrap">
+<h2>Updates</h2>
+<table>
+<thead>
+<tr>
+<th>Active</th>
+<th>Advertiser</th>
+<th>Text</th>
+<th>Date</th>
+</tr></thead>
+<tbody>
+<?php foreach ($updates as $update):?>
+<tr>
+	<td><input type="checkbox" name="active" <?php if ($update->Status == 'Active') echo 'checked="CHECKED"';?>></td>
+	<td><?php echo $update->AdvertiserID;?></td>
+	<td>
+	<?php if ($update->Title):?><h4><?php echo $update->Title;?></h4><?php endif;?>
+	<?php echo $update->Text;?>
+	<a href="<?php echo $update->URL;?>">View Update &raquo;</a>
+	</td>
+	<td><?php echo $update->CreatedDate;?></td>
+</tr>
+<?php endforeach;?>
+</tbody>
+</table>
+
+<form  id="refresh">
+<input type="hidden" name="refresh" value="1" />
+<input type="button" value="Refresh" class="button" />
+
+<div class="status">
+</div>
+</form>
+
+
+</div>

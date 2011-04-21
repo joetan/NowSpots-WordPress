@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `nowspots_Advertisers` (
 	`Status` ENUM('Active','Inactive') NOT NULL, 
 	`CreatedDate` datetime, 
 	`ModifiedDate` datetime, 
-	PRIMARY KEY (`id`),
+	PRIMARY KEY (`id`)
 ) TYPE=InnoDB;
 CREATE TABLE IF NOT EXISTS `nowspots_SocialMediaAccounts` (
 	`id` int(11) NOT NULL AUTO_INCREMENT, 
@@ -20,14 +20,18 @@ CREATE TABLE IF NOT EXISTS `nowspots_SocialMediaAccounts` (
 ) TYPE=InnoDB;
 CREATE TABLE IF NOT EXISTS `nowspots_SocialMediaAccountUpdates` ( 
 	`id` int(11) NOT NULL AUTO_INCREMENT, 
+	`AdvertiserID` int(11) NOT NULL, 
 	`SocialMediaAccountID` int(11) NOT NULL, 
+	`UpdateID` varchar(255),
 	`Title` TEXT, 
 	`Text` TEXT, 
 	`URL` varchar(255), 
 	`Status` ENUM('Active','Inactive') NOT NULL, 
 	`CreatedDate` datetime, 
 	`ModifiedDate` datetime, 
-	PRIMARY KEY (`id`)
+	PRIMARY KEY (`id`),
+	INDEX(`CreatedDate`),
+	UNIQUE(`SocialMediaAccountID`, `UpdateID`)
 ) TYPE=InnoDB;
 
 
@@ -38,9 +42,8 @@ CREATE TABLE IF NOT EXISTS `nowspots_Ads` (
 	`StartDate` datetime, 
 	`EndDate` datetime, 
 	`SocialMediaAccountID` int(11) NOT NULL,
-	`ImageID` int(11), 
-	`AdTemplateID` bigint(11), 
-	`AdStatus` ENUM('Active','Pending','Inactive') NOT NULL, 
+	`Template` varchar(16), 
+	`Status` ENUM('Active','Pending','Inactive') NOT NULL, 
 	`CreatedDate` datetime, 
 	`ModifiedDate` datetime, 
 	PRIMARY KEY (`id`)
@@ -50,26 +53,13 @@ CREATE TABLE IF NOT EXISTS `nowspots_Images` (
 	`AdvertiserID` int(11), 
 	`SocialMediaAccountID` int(11), 
 	`Path` varchar(255), 
-	`ImageStatus` ENUM('Active','Inactive') NOT NULL, 
+	`Status` ENUM('Active','Inactive') NOT NULL, 
 	`CreatedDate` datetime, 
 	`ModifiedDate` datetime, 
 	PRIMARY KEY (`id`)
 ) TYPE=InnoDB;
-CREATE TABLE IF NOT EXISTS `nowspots_AdTemplates` ( 
-	`id` int(11) NOT NULL AUTO_INCREMENT, 
-	`AdTemplateName` varchar(255),
-	`Height` int, 
-	`Width` int, 
-	`ImageHeight` int, 
-	`ImageWidth` int, 
-	`NumUpdates` int, 
-	`AdTemplateContent` TEXT, 
-	`LayoutCSS` TEXT, 
-	`AdTemplateStatus` ENUM('Active','Inactive') NOT NULL, 
-	`CreatedDate` datetime,
-	`ModifiedDate` datetime, 
-	PRIMARY KEY (`id`)
-) TYPE=InnoDB;
+
+
 CREATE TABLE IF NOT EXISTS `nowspots_Transactions` ( 
 	`id` int(11) NOT NULL AUTO_INCREMENT, 
 	`AdvertiserID` int(11) NOT NULL, 
@@ -80,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `nowspots_Transactions` (
 	`FollowClicks` int(11) default '0', 
 	`ContentClicks` int(11) default '0', 
 	`ShareClicks` int(11) default '0', 
-	`TransactionStatus` ENUM('Active','Inactive') NOT NULL, 
+	`Status` ENUM('Active','Inactive') NOT NULL, 
 	`CreatedDate` datetime,
 	`ModifiedDate` datetime, 
 	PRIMARY KEY (`id`)

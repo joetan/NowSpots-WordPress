@@ -1,0 +1,50 @@
+<?php if (!$submit) $submit = 'Submit'; ?>
+<form method="post">
+<input type="hidden" name="action" value="<?php echo $action;?>" />
+<?php if ($ad->id):?><input type="hidden" name="id" value="<?php echo esc_attr($ad->id);?>" /><?php endif;?>
+
+<h3>1. Advertiser Info</h3>
+
+<p>
+<select name="Ad[AdvertiserID]">
+<option value="">(select an advertiser)</option>
+<?php foreach ($advertisers as $advertiser):?>
+<option value="<?php echo $advertiser->id;?>" <?php if ($advertiser->id == $ad->AdvertiserID) echo 'selected="SELECTED"';?>><?php echo $advertiser->Name;?></option>
+<?php endforeach;?>
+</select>
+</p>
+
+<h3>2. Write a headline for the ad</h3>
+<p>
+Headline: <input type="text" name="Ad[Name]" value="<?php echo esc_attr($ad->Name);?>" />
+</p>
+
+<h3>3. Choose Ad Template</h3>
+
+<p>
+<select name="Ad[Template]">
+<option value="">(select a template)</option>
+<?php foreach ($templates as $id => $label):?>
+<option value="<?php echo $id;?>" <?php if ($id == $ad->Template) echo 'selected="SELECTED"';?>><?php echo $label;?></option>
+<?php endforeach;?>
+</select>
+</p>
+
+<h3>4. Ad Status</h3>
+
+<p>
+<select name="Ad[Status]">
+<?php foreach (array('Active', 'Pending', 'Inactive') as $status):?>
+<option value="<?php echo $status;?>" <?php if ($status == $ad->Status) echo 'selected="SELECTED"';?>><?php echo $status;?></option>
+<?php endforeach;?>
+</select>
+</p>
+
+
+
+<p>
+<input type="submit" value="<?php echo $submit;?>" class="button button-primary" />
+</p>
+
+</form>
+

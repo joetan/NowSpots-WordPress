@@ -7,6 +7,9 @@
  * @author Joe Tan
  * 
  */
+
+class NowSpots_Exception extends Exception {};
+
 abstract class NowSpots_Model {
     /**
      * Pass properties to construct
@@ -32,12 +35,16 @@ abstract class NowSpots_Model {
 				} elseif (array_key_exists($property->name, $properties)) {
 					$properties[$property->name] = '';
             	} else {
-	                throw new Exception("Unable to create object. Missing property: {$property->name}");
+	                throw new NowSpots_Exception("Unable to create object. Missing property: {$property->name}");
 				}
             	
             }
-
-            $this->{$property->name} = $properties[$property->name];
+            
+            if (in_array($property->name, array('CreatedDate', 'ModifiedDate', 'StartDate', 'EndDate'))) {
+            	$this->{$property->name} = date('Y-m-d H:i:s', strtotime($properties[$property->name]));
+            } else {
+	            $this->{$property->name} = $properties[$property->name];
+	        }
         }
         
         
@@ -163,6 +170,52 @@ abstract class NowSpots_Model {
         return $return;
         */
     }
+    
+    
+    public static function find($params) {
+    	global $wpdb;
+    	$return = array();
+    	$where = 'WHERE true ';
+    	foreach ($params as $field => $val) {
+    		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
+    	}
+		$results = $wpdb->get_results("SELECT * FROM ".self::getTableName() .' '. $where, ARRAY_A);
+		foreach ($results as $row) {
+			$return[] = new static($row);
+		}
+		return $return;
+    }
+    
+    
+    public static function fetch_recent($params=array(), $limit=10) {
+    	global $wpdb;
+    	$return = array();
+    	
+    	$where = $wpdb->prepare('WHERE Status = %s ', 'Active');
+    	foreach ($params as $field => $val) {
+    		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
+    	}
+    	
+    	$sql = $wpdb->prepare("SELECT * FROM ".self::getTableName() . " $where ORDER BY CreatedDate DESC, id DESC LIMIT $limit");
+    	$results = $wpdb->get_results($sql, ARRAY_A);
+    	
+    	foreach ($results as $row) {
+    		$return[] = new static($row);
+    	}
+    	return $return;
+    }
+    public static function fetch_most_recent($params) {
+    	if ($rows = self::fetch_recent($params, 1)) {
+	    	return $rows[0];
+    	} else {
+    		return null;
+    	}
+    }
+    
+    
+    public function getID() {
+    	return $this->id;
+    }
 
 	/**
      * Create a new blank default object
@@ -189,6 +242,9 @@ abstract class NowSpots_Model {
 
         $object = new static($properties);
         $object->save();
+        if ($wpdb->insert_id) {
+        	$object->id = $wpdb->insert_id;
+        }
         return $object;
     }
 
