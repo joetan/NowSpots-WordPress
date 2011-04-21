@@ -1,0 +1,14 @@
+<div class="nowspots-ad nowspots-box">
+<div class="top">
+	<img src="<?php echo $Image;?>" class="featured" />
+	<strong class="headline"><a href=""><?php echo $Name;?></a></strong>
+</div>
+<div class="updates">
+<ul>
+<?php foreach ($updates as $update):?>
+<li><?php echo $update->Text;?></li>
+<?php endforeach;?>
+</ul>
+</div>
+
+</div>

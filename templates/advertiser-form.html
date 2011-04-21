@@ -1,12 +1,13 @@
 <?php if (!$submit) $submit = 'Submit'; ?>
 <form method="post">
-<input type="hidden" name="action" value="<?php echo $action;?>" />
+<input type="hidden" name="_action" value="<?php echo $action;?>" />
 <?php if ($advertiser->id):?><input type="hidden" name="id" value="<?php echo esc_attr($advertiser->id);?>" /><?php endif;?>
 
 <h3>1. Advertiser Basics</h3>
 Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($advertiser->Name);?>" />
 
-<h3>2. Advertiser's social media accounts</h3>
+
+<h3>2. Social media accounts</h3>
 
 <table id="accounts">
 <thead>

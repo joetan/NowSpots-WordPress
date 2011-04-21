@@ -1,7 +1,7 @@
 <div class="wrap">
 <h2>Advertisers</h2>
 
-<a href="<?php echo add_query_arg(array('action' => 'add'));?>">Add New Advertiser</a>
+<a href="<?php echo add_query_arg(array('_action' => 'add'));?>">Add New Advertiser</a>
 
 
 <table>
@@ -28,14 +28,14 @@
 	</td>
 	<td><?php echo $advertiser->Status;?></td>
 	<td>
-		<a href="<?php echo add_query_arg(array('action' => 'edit', 'id' => $advertiser->id));?>">Edit</a>
+		<a href="<?php echo add_query_arg(array('_action' => 'edit', 'id' => $advertiser->id));?>">Edit</a>
 		<?php if ($advertiser->Status == 'Active') {
 			$statusAction = 'deactivate';
 		} else {
 			$statusAction = 'activate';
 		}
 		?>
-		<a href="<?php echo add_query_arg(array('action' => $statusAction, 'id' => $advertiser->id));?>" onclick="return confirm('Are you sure you want to <?php echo $statusAction;?> this advertiser?')"><?php echo ucwords($statusAction);?></a>
+		<a href="<?php echo add_query_arg(array('_action' => $statusAction, 'id' => $advertiser->id));?>" onclick="return confirm('Are you sure you want to <?php echo $statusAction;?> this advertiser?')"><?php echo ucwords($statusAction);?></a>
 	
 	</td>
 	

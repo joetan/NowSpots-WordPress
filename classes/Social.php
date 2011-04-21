@@ -23,23 +23,47 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 			return parent::create($properties);
 		}
 	}
+	
 	public function refresh() {
 		require_once NOWSPOTS_CLASSES_DIR.'SocialUpdates.php';
 		
 		$updates = array();
+		if ($this->Status != 'Active') {
+			return array();
+		}
 		switch ($this->Type) {
 			case 'Facebook':
-				
+				$id = $this->parseID($this->URL, $this->Type);
+
+				if (!$id) {
+					throw new NowSpots_Exception('Unable to parse Facebook id from '.$this->URL);
+				}
+				$response = wp_remote_get("http://graph.facebook.com/$id/feed");
+
+				if (!is_wp_error($response)) {
+					$json = wp_remote_retrieve_body($response);
+					$data = json_decode($json);
+					if (isset($data->data) && is_array($data->data)) {
+						$statuses = $data->data;
+					} else {
+						 throw new NowSpots_Exception('Unable to fetch Facebook updates from '.$this->URL);
+					}
+
+					foreach ($statuses as $status) {
+						$updates[] = NowSpots_SocialMediaAccountUpdates::create(array(
+							'AdvertiserID' => $this->AdvertiserID,
+							'SocialMediaAccountID' => $this->getID(),
+							'UpdateID' => $status->id,
+							'Title' => '',
+							'Text' => $status->message,
+							'URL' => $status->link,
+							'CreatedDate' => $status->created_time,
+						));
+					}
+				}
 			break;
 			case 'Twitter':
-				$parts = parse_url($this->URL);
-				$path = $parts['path'];
-				$frag = $parts['fragment'];
-				if ($path == '/' && $frag) {
-					$path = substr($frag, 1);
-				}
-				
-				$screen_name = preg_replace('@^/([^/]*)/?.*@', '$1', $path);
+				$screen_name = $this->parseID($this->URL, $this->Type);
 				if (!$screen_name) {
 					throw new NowSpots_Exception('Unable to parse social media acount id from '.$this->URL);
 				}
@@ -69,6 +93,49 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 			break;
 		}
 		return $updates;
+	}
+	
+	public function parseID($url, $type=false) {
+	
+		switch (strtolower($type)) {
+			case 'facebook':
+				$parts = parse_url($this->URL);
+				
+				$paths = explode('/', $parts['path']);
+				array_shift($paths); // remove root "/"
+				$len = count($paths);
+				
+				if (preg_match('/.*\.php$/', $parts['path']) && $parts['query']) {
+					parse_str($parts['query'], $params);
+					if (isset($params['id'])) {
+						$id = $params['id'];
+					} else {
+						$id = false;
+					}
+				} elseif ($len == 1) {
+					$id = $paths[0];
+				} elseif ($paths[0] == 'pages' && $len == 3) {
+					$id = $paths[2];
+				} else {
+					$id = false;
+				}
+				return $id;
+			break;
+			case 'twitter':
+				$parts = parse_url($this->URL);
+				$path = $parts['path'];
+				$frag = $parts['fragment'];
+				if ($path == '/' && $frag) {
+					$path = substr($frag, 1);
+				}
+				
+				$screen_name = preg_replace('@^/([^/]*)/?.*@', '$1', $path);
+				return $screen_name;
+			break;
+			default:
+				return false;
+			break;
+		}
 	}
 	
 	

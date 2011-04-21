@@ -1,0 +1,48 @@
+.nowspots-ad {
+	position: relative;
+	background: #EDEFF4;
+	border: 1px solid #777;
+}
+.nowspots-ad .top {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	padding:5px 0 0 150px;
+}
+.nowspots-ad .top .headline {
+	font-size: 14px;
+	font-weight: bold;
+}
+.nowspots-ad .top .headline a {
+	text-decoration: none;
+}
+.nowspots-ad .top img.featured {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
+.nowspots-ad .updates {
+	position: absolute;
+	bottom: 10px;
+	left: 5px;
+	overflow: auto;
+	background: white;
+}
+.nowspots-ad .updates ul {
+	padding: 5px;
+	margin: 0;
+}
+.nowspots-ad .updates ul li {
+	padding: 0 0 10px 0;
+	margin: 0 0 10px 0;
+	list-style: none;
+	border-bottom: 1px solid #ccc;
+}
+.nowspots-box {
+	width: 300px;
+	height: 250px;
+}
+.nowspots-box .updates {
+	width: 290px;
+	height: 115px;
+}

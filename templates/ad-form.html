@@ -1,18 +1,47 @@
 <?php if (!$submit) $submit = 'Submit'; ?>
 <form method="post">
-<input type="hidden" name="action" value="<?php echo $action;?>" />
+<input type="hidden" name="_action" value="<?php echo $action;?>" />
 <?php if ($ad->id):?><input type="hidden" name="id" value="<?php echo esc_attr($ad->id);?>" /><?php endif;?>
 
 <h3>1. Advertiser Info</h3>
-
+<?php if (isset($advertisers)):?>
 <p>
-<select name="Ad[AdvertiserID]">
+<select name="Ad[AdvertiserID]" id="Advertiser">
 <option value="">(select an advertiser)</option>
 <?php foreach ($advertisers as $advertiser):?>
 <option value="<?php echo $advertiser->id;?>" <?php if ($advertiser->id == $ad->AdvertiserID) echo 'selected="SELECTED"';?>><?php echo $advertiser->Name;?></option>
 <?php endforeach;?>
 </select>
 </p>
+<?php else:?>
+<input type="hidden" name="Ad[AdvertiserID]" value="<?php echo $advertiser->id;?>" />
+	<strong><?php echo $advertiser->Name;?></strong>
+<?php endif;?>
+
+<h3>1a. Select Social Media Account</h3>
+<div id="account-list">
+<?php 
+if (isset($accounts)) include(dirname(__FILE__).'/ad-form-accounts.html');
+else echo 'Select advertiser first';
+?>
+</div>
+
+
+
+<h3>1b. Select Image</h3>
+
+<input type="hidden" name="Ad[Image]" id="Image" value="<?php echo esc_attr($ad->Image);?>">
+<div id="AdvertiserImage">
+<?php if ($ad->Image):?>
+<img src="<?php echo $ad->Image;?>" id="img" />
+<?php else:?>
+<span id="img">No image selected</span>
+<?php endif;?>
+
+<a href="media-upload.php?post_id=0&selection=nowspots&TB_iframe=1&width=650" class="button thickbox" id="select_image" title="Select Image...">Select Image...</a>
+</div>
+
+
 
 <h3>2. Write a headline for the ad</h3>
 <p>

@@ -97,7 +97,7 @@ abstract class NowSpots_Model {
 		$data = array();
 		$fields = self::getFields();
 		foreach ($fields as $field) {
-			$data[$field] = $this->$field;
+			$data[$field] = trim($this->$field);
 		}
 		
         $wpdb->replace(self::getTableName(), $data);
@@ -191,7 +191,7 @@ abstract class NowSpots_Model {
     	global $wpdb;
     	$return = array();
     	
-    	$where = $wpdb->prepare('WHERE Status = %s ', 'Active');
+    	$where = 'WHERE true ';
     	foreach ($params as $field => $val) {
     		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
     	}

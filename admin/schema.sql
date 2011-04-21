@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `nowspots_Ads` (
 	`StartDate` datetime, 
 	`EndDate` datetime, 
 	`SocialMediaAccountID` int(11) NOT NULL,
+	`Image` varchar(255) NOT NULL, 
 	`Template` varchar(16), 
 	`Status` ENUM('Active','Pending','Inactive') NOT NULL, 
 	`CreatedDate` datetime, 

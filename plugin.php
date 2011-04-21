@@ -10,8 +10,16 @@ if (!defined('NOWSPOTS_CLASSES_DIR')) define('NOWSPOTS_CLASSES_DIR', dirname(__F
 class NowSpotsAds {
 	var $_version = '1.0';
 	var $_capability = 'edit_themes';
+	var $_pages = array(
+		//'nowspots' => 'NowSpots',
+		'advertisers' => 'Advertisers',
+		'ads' => 'Ads',
+		'updates' => 'Updates',
+	);
+	var $_slug = 'nowspots';
 
 	function __construct() {
+		add_action('init', array(&$this, 'init'));
 		add_action('widgets_init', array(&$this, 'widgets_init'));
 		add_action('admin_init', array(&$this, 'admin_init'));
 		add_action('admin_menu', array(&$this, 'admin_menu'));
@@ -28,30 +36,49 @@ class NowSpotsAds {
 			$q = trim($q);
 			if ($q) $wpdb->query($q);
 		}
-		wp_schedule_event(time(), 'hourly', 'nowspots_cron');
+		wp_schedule_event(time()+100, 'hourly', 'nowspots_cron');
+	}
+	function init() {
+		add_theme_support( 'post-thumbnails' );
+		add_image_size('nowspots-ad-image', 140, 89, true);
+		wp_enqueue_style('nowspots', '/wp-content/plugins/nowspots/css/ads.css', array(), $this->_version);
 	}
 	function widgets_init() {
 		register_widget('NowSpots_Widget');
 	}
 	function admin_init() {
-		add_action('wp_ajax_nowspots_refresh', array(&$this, 'refresh'));
+		add_action('wp_ajax_nowspots_get_accounts', array(&$this, 'ajax_get_accounts'));
+		add_action('wp_ajax_nowspots_refresh', array(&$this, 'ajax_refresh'));
+		add_action('wp_ajax_nowspots_toggle_update', array(&$this, 'ajax_toggle_update'));
+		add_action("load-toplevel_page_{$this->_slug}", array(&$this, 'admin_scripts'));
+		foreach ($this->_pages as $page => $name) {
+			add_action("load-{$this->_slug}_page_{$this->_slug}-{$page}", array(&$this, 'admin_scripts'));
+		}
+		add_action("load-{$this->_slug}_page_{$this->_slug}-ads", 'add_thickbox');
 //		$baseurl = plugins_url('', __FILE__);
-		$baseurl = '/../wp-content/plugins/nowspots';
+		
+		// image selection
+		if ($_REQUEST['selection'] && $_REQUEST['selection'] == 'nowspots') {
+			add_filter('attachment_fields_to_edit', array(&$this, 'selection_image_fields_to_edit'), 20, 2);
+			add_action('post-upload-ui', array(&$this, 'selection_upload_ui'));
+		}
+	}
+	function admin_scripts() {
+		$baseurl = '/wp-content/plugins/nowspots';
 		wp_enqueue_script('nowspots-admin', $baseurl.'/js/admin.js', array('jquery'), $this->_version);
+		wp_enqueue_style('nowspots-admin', $baseurl.'/css/admin.css', array(), $this->_version);
 		wp_localize_script('nowspots-admin', 'NowSpotsAdmin', array(
 			'refresh_nonce' => wp_create_nonce( 'refresh' ),
 			'save_nonce' => wp_create_nonce( 'save' ),
 			)
 		);
-		
-		
 	}
 	function admin_menu() {
-		$slug = 'nowspots';
-		add_menu_page(__('NowSpots', 'nowspots'), __('NowSpots', 'nowspots'), $this->_capability, $slug, array(&$this, 'settings'));
-		add_submenu_page($slug, 'Advertisers', 'Advertisers', $this->_capability, $slug.'-advertisers', array(&$this, 'settings_advertisers'));
-		add_submenu_page($slug, 'Ads', 'Ads', $this->_capability, $slug.'-ads', array(&$this, 'settings_ads'));
-		add_submenu_page($slug, 'Updates', 'Updates', $this->_capability, $slug.'-updates', array(&$this, 'settings_updates'));
+
+		add_menu_page(__('NowSpots', 'nowspots'), __('NowSpots', 'nowspots'), $this->_capability, $this->_slug, array(&$this, 'settings'));
+		foreach ($this->_pages as $page => $name) {
+			add_submenu_page($this->_slug, __($name, 'nowspots'), __($name, 'nowspots'), $this->_capability, "{$this->_slug}-{$page}", array(&$this, "settings_{$page}"));
+		}
 	}
 	
 	function post_vars($key) {
@@ -70,7 +97,19 @@ class NowSpotsAds {
 		error_log('starting cron');
 	}
 	
-	function refresh() {
+	function ajax_get_accounts() {
+		require_once NOWSPOTS_CLASSES_DIR.'Social.php';
+		$id = (int) $_POST['AdvertiserID'];
+		if ($id) {
+			$accounts = NowSpots_SocialMediaAccounts::find(array('AdvertiserID' => $id));
+			include(NOWSPOTS_TEMPLATES_DIR.'ad-form-accounts.html');
+		} else {
+			echo 'Error loading.';
+		}
+		die(0);
+	}
+	
+	function ajax_refresh() {
 		require_once NOWSPOTS_CLASSES_DIR.'Advertisers.php';
 		$advertisers = NowSpots_Advertisers::getAll();
 		foreach ($advertisers as $advertiser) {
@@ -81,14 +120,12 @@ class NowSpotsAds {
 				if ($updates = $service->refresh()) {
 					echo 'Done';
 				} else {
-					echo 'Error';
+					echo 'Done, but no updates found.';
 				}
-				
 				echo '<br />';
 				flush();
 			}
-			
-			echo '<hr /><br /><br />';
+			echo '<hr />';
 			flush();
 		}
 		echo 'Done. Reload the page to view updates.';
@@ -98,6 +135,20 @@ class NowSpotsAds {
 		
 		die(0);
 		
+	}
+	function ajax_toggle_update() {
+		if ($_POST['active'] && $_POST['active'] != 'false') {
+			$active = 'Active';
+		} else {
+			$active = 'Inactive';
+		}
+		require_once NOWSPOTS_CLASSES_DIR.'SocialUpdates.php';
+		$update = NowSpots_SocialMediaAccountUpdates::get($_POST['id']);
+		$update->update('Status', $active);
+		echo json_encode(array(
+			'active' => $active == 'Active',
+		));
+		die(0);
 	}
 	
 	
@@ -109,7 +160,7 @@ class NowSpotsAds {
 		require_once NOWSPOTS_CLASSES_DIR.'Advertisers.php';
 		
 		if ($_POST) {
-			switch ($_POST['action']) {
+			switch ($_POST['_action']) {
 				case 'new':
 				
 					$fields = array();
@@ -137,8 +188,8 @@ class NowSpotsAds {
 					echo 'done';
 				break;
 			}
-		} elseif ($_GET['action']) {
-			switch ($_GET['action']) {
+		} elseif ($_GET['_action']) {
+			switch ($_GET['_action']) {
 				case 'edit':
 					$advertiser = NowSpots_Advertisers::get($_GET['id']);
 					$action = 'save';
@@ -181,11 +232,12 @@ class NowSpotsAds {
 		require_once NOWSPOTS_CLASSES_DIR.'Ads.php';
 		require_once NOWSPOTS_CLASSES_DIR.'Advertisers.php';
 		require_once NOWSPOTS_CLASSES_DIR.'Templates.php';
+		require_once NOWSPOTS_CLASSES_DIR.'Social.php';
 		if ($_POST) {
-			switch ($_POST['action']) {
+			switch ($_POST['_action']) {
 				case 'new':
 					$fields = array();
-					foreach (array('AdvertiserID', 'Name', 'Template') as $field) {
+					foreach (array('AdvertiserID', 'SocialMediaAccountID', 'Name', 'Template', 'Image') as $field) {
 						$fields[$field] = stripslashes($_POST['Ad'][$field]);
 					}
 					$fields['Status'] = 'Active';
@@ -195,7 +247,7 @@ class NowSpotsAds {
 				break;
 				case 'save':
 					$fields = array();
-					foreach (array('AdvertiserID', 'Name', 'Template', 'Status') as $field) {
+					foreach (array('AdvertiserID', 'SocialMediaAccountID', 'Name', 'Template', 'Image', 'Status') as $field) {
 						$fields[$field] = stripslashes($_POST['Ad'][$field]);
 					}
 					$ad = NowSpots_Ads::get($_POST['id']);
@@ -204,25 +256,31 @@ class NowSpotsAds {
 				break;
 			}
 		
-		} elseif ($_GET['action']) {
-			$advertisers = NowSpots_Advertisers::getAll();
+		} elseif ($_GET['_action']) {
 			$templates = NowSpots_Templates::getAll();
-			switch ($_GET['action']) {
+			switch ($_GET['_action']) {
 				case 'add':
 					$action = 'new';
 					$submit = 'Create New Ad';
 					$ad = NowSpots_Ads::blank();
+					$advertisers = NowSpots_Advertisers::getAll();
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-form.html');
 				break;
 				case 'edit':
 					$action = 'save';
 					$submit = 'Save Ad';
 					$ad = NowSpots_Ads::get($_GET['id']);
+					if ($ad->AdvertiserID) {
+						$advertiser = NowSpots_Advertisers::get($ad->AdvertiserID);
+						$accounts = NowSpots_SocialMediaAccounts::find(array('AdvertiserID' => $ad->AdvertiserID));
+					} else {
+						$advertisers = NowSpots_Advertisers::getAll();
+					}
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-form.html');
 				break;
 				case 'review';
 					$ad = NowSpots_Ads::get($_GET['id']);
-					$updates = $ad->getRecentUpdates();
+					$updates = $ad->getAllRecentUpdates();
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-review.html');
 					include(NOWSPOTS_TEMPLATES_DIR.'updates.html');
 				break;
@@ -238,6 +296,76 @@ class NowSpotsAds {
 		
 		include(NOWSPOTS_TEMPLATES_DIR.'updates.html');
 	}
+	
+	
+	
+	function selection_image_fields_to_edit($fields, $attachment) {
+		$url = wp_get_attachment_url($attachment->ID);
+		add_action('admin_print_footer_scripts', array(&$this, 'hide_wpgallery'), 100);
+		add_action('admin_print_footer_scripts', array(&$this, 'selection_upload_ui'), 100);
+		
+		unset($fields['image_alt'], $fields['post_content'], $fields['post_excerpt'], $fields['url'], $fields['image_url'], $fields['align'], $fields['image-size']);
+		if ($thumbnail = wp_get_attachment_image_src($attachment->ID, 'nowspots-ad-image')) {
+			$thumbnail_src = $thumbnail[0];
+		} else {
+			$thumbnail_src = false;
+		}
+		
+		$fields['select-image'] = array(
+			'label' => 'URL',
+			'value' => $url,
+			'type' => 'hidden',
+			'extra_rows' => array(
+				'select' => 
+				'<input type="button" class="button button-secondary" value="Select" onclick="set_upload_selection('.($thumbnail_src ? "'$thumbnail_src'" : 'document.getElementById(\'attachments['.$attachment->ID.'][select-image]\').value').', \''.$_REQUEST['selection'].'\', '.$attachment->ID.')" />'
+				),
+		);
+		return $fields;
+	}
+	function selection_upload_ui() {
+		?><script type="text/javascript">
+		function prepareMediaItem(fileObj, serverData) {
+			var f = ( typeof shortform == 'undefined' ) ? 1 : 2, item = jQuery('#media-item-' + fileObj.id);
+			// Move the progress bar to 100%
+			jQuery('.bar', item).remove();
+			jQuery('.progress', item).hide();
+		
+			try {
+				if ( typeof topWin.tb_remove != 'undefined' )
+					topWin.jQuery('#TB_overlay').click(topWin.tb_remove);
+			} catch(e){}
+		
+			// Old style: Append the HTML returned by the server -- thumbnail and form inputs
+			if ( isNaN(serverData) || !serverData ) {
+				item.append(serverData);
+				prepareMediaItemInit(fileObj);
+			}
+			// New style: server data is just the attachment ID, fetch the thumbnail and form html from the server
+			else {
+				item.load('async-upload.php', {attachment_id:serverData, fetch:f, selection:1}, function(){
+					prepareMediaItemInit(fileObj);updateMediaForm()
+					jQuery("#media-upload table.widefat, #sort-buttons, #gallery-settings, tr.align, tr.image-size, tr.submit td.savesend input.button, .wp-post-thumbnail").hide();
+					
+					
+					});
+			}
+		}
+		function set_upload_selection(url, sid, attachment_id) {
+			var win = window.dialogArguments || opener || parent || top;
+			win.set_upload_selection(url, sid, attachment_id);
+			win.tb_remove();
+		}
+		
+		</script><?php
+	}
+		
+		
+	function hide_wpgallery() {
+		?><script type="text/javascript">
+			jQuery(function($) { $("#media-upload table.widefat, #sort-buttons, #gallery-settings, tr.align, tr.image-size, tr.submit td.savesend input.button, .wp-post-thumbnail").hide();  });
+		</script><?php
+	}
+		
 	
 	
 }
@@ -281,20 +409,18 @@ class NowSpots_Widget extends WP_Widget {
 function nowspots_cron() {
 	NowSpotsAds::cron();
 }
-function nowspot_ad($ad_id) {
-	echo nowspot_get_ad($ad_id);
+function nowspot_ad($ad_id, $template=false) {
+	echo nowspot_get_ad($ad_id, $template);
 }
-function nowspot_get_ad($ad_id) {
+function nowspot_get_ad($ad_id, $template=false) {
 	require_once NOWSPOTS_CLASSES_DIR.'Ads.php';
 
 	$ad = NowSpots_Ads::get($ad_id);
 	if ($ad->Status != 'Active') return;
 	
-	$update = $ad->getMostRecentUpdate();
-	echo '--- this is the ad code --';
-	pr($ad);
-	pr($update);
-	echo '-- end ad code --';
+	$html = $ad->render($template);
+
+	
 	// TODO: transaction logging
 	
 }

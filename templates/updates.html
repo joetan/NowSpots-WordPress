@@ -1,17 +1,18 @@
 <div class="wrap">
 <h2>Updates</h2>
-<table>
+<table id="updates" cellspacing="0" cellpadding="0">
 <thead>
 <tr>
-<th>Active</th>
-<th>Advertiser</th>
-<th>Text</th>
-<th>Date</th>
-</tr></thead>
+	<th>Active</th>
+	<th>Advertiser</th>
+	<th>Text</th>
+	<th>Date</th>
+</tr>
+</thead>
 <tbody>
 <?php foreach ($updates as $update):?>
-<tr>
-	<td><input type="checkbox" name="active" <?php if ($update->Status == 'Active') echo 'checked="CHECKED"';?>></td>
+<tr class="<?php if ($update->Status != 'Active') echo 'inactive';?>">
+	<td><input class="active" rel="<?php echo $update->id;?>" type="checkbox" name="active" <?php if ($update->Status == 'Active') echo 'checked="CHECKED"';?>></td>
 	<td><?php echo $update->AdvertiserID;?></td>
 	<td>
 	<?php if ($update->Title):?><h4><?php echo $update->Title;?></h4><?php endif;?>

@@ -1,0 +1,35 @@
+table {
+	width: 95%;	
+}
+table tr.inactive {
+	background: #B80606;
+}
+table tr.inactive td {
+	color: white;
+	text-decoration:line-through;
+}
+table tr.inactive td a {
+	color: white;
+}
+
+
+table thead th {
+	text-align: left;
+}
+
+#AdvertiserImage {
+	position: relative;
+	height: 120px;
+	padding-left: 150px;
+}
+#AdvertiserImage #img {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 140px;
+	height: 89px;
+	background: #ccc;
+	text-align: center;
+	
+}

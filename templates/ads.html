@@ -1,8 +1,8 @@
 <div class="wrap">
 <h2>Ads</h2>
-<a href="<?php echo add_query_arg(array('action' => 'add'));?>">Create New Ad</a>
+<a href="<?php echo add_query_arg(array('_action' => 'add'));?>" class="button button-primary">Create New Ad</a>
 
-<table>
+<table id="ads" cellspacing="0" cellpadding="0">
 <thead>
 <th>Headline</th>
 <th>Created</th>
@@ -13,13 +13,13 @@
 <tbody>
 <?php foreach ($ads as $ad):?>
 <tr>
-	<td><a href="<?php echo add_query_arg(array('action' => 'review', 'id' => $ad->id));?>"><?php echo $ad->Name;?></a></td>
+	<td><a href="<?php echo add_query_arg(array('_action' => 'review', 'id' => $ad->id));?>"><?php echo $ad->Name;?></a></td>
 	<td><?php echo $ad->CreatedDate;?></td>
 	<td><?php echo $ad->Template;?></td>
 	<td><?php echo $ad->Status;?></td>
 	<td>
-	<a href="<?php echo add_query_arg(array('action' => 'edit', 'id' => $ad->id));?>">Edit</a>
-	<a href="<?php echo add_query_arg(array('action' => 'review', 'id' => $ad->id));?>">Review</a>
+	<a href="<?php echo add_query_arg(array('_action' => 'edit', 'id' => $ad->id));?>">Edit</a>
+	<a href="<?php echo add_query_arg(array('_action' => 'review', 'id' => $ad->id));?>">Review</a>
 	</td>
 </tr>
 <?php endforeach;?>
