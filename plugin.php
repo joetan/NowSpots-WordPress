@@ -7,6 +7,8 @@ Author: Joe Tan (joetan54@gmail.com)
 if (!defined('NOWSPOTS_TEMPLATES_DIR')) define('NOWSPOTS_TEMPLATES_DIR', dirname(__FILE__).'/templates/');
 if (!defined('NOWSPOTS_CLASSES_DIR')) define('NOWSPOTS_CLASSES_DIR', dirname(__FILE__).'/classes/');
 
+if (!function_exists('pr')) { function pr($o) { echo '<pre>';print_r($o);echo '</pre>'; } }
+
 class NowSpotsAds {
 	var $_version = '1.0';
 	var $_capability = 'edit_themes';
