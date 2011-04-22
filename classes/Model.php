@@ -20,11 +20,13 @@ abstract class NowSpots_Model {
      */
      
     public $id, $Status, $CreatedDate, $ModifiedDate;
+    
+
     protected function __construct(Array $properties)
     {
         $reflect = new ReflectionObject($this);
 
-        foreach ($reflect->getProperties() as $property) {
+        foreach ($reflect->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!array_key_exists($property->name, $properties) || ($properties[$property->name] === null)) {
             	if (in_array($property->name, array('CreatedDate', 'ModifiedDate'))) { // give dates a default of now
 	            	$properties[$property->name] = current_time('mysql');
@@ -302,3 +304,5 @@ abstract class NowSpots_Model {
     	return $wpdb->prefix . preg_replace('/NowSpots_/', 'nowspots_', get_called_class());
     }
 }
+
+
