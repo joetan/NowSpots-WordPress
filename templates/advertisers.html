@@ -1,41 +1,37 @@
 <div class="wrap">
-<h2>Advertisers</h2>
+<h1 id="nowspots-logo">NowSpots</h1>
 
-<a href="<?php echo add_query_arg(array('_action' => 'add'));?>">Add New Advertiser</a>
+<h2 class="nav-tab-wrapper">
+<a href="<?php echo add_query_arg(array('_action' => null));?>" class="nav-tab nav-tab-active">Manage Advertisers</a>
+<a href="<?php echo add_query_arg(array('_action' => 'add'));?>" class="nav-tab">Add an Advertiser</a>
+</h2>
 
 
-<table>
+<table cellpadding="0" cellspacing="0">
 <thead>
 <tr>
-	<th>Name</th>
-	<th>Date Created</th>
-	<th>Services</th>
-	<th>Status</th>
-	<th>Action</th>
+	<th class="title">Name</th>
+	<th class="date">Date Created</th>
+	<th class="services">Services</th>
+	<th class="status">Status</th>
+	<th class="action">Action</th>
 </tr>
 </thead>
 <tbody>
 <?php foreach ($advertisers as $advertiser):?>
-<tr>
-	<td><?php echo $advertiser->Name;?></td>
-	<td><?php echo $advertiser->CreatedDate;?></td>
-	<td>
+<tr class="<?php echo ($odd = !$odd) ? 'odd' : '';?>">
+	<td class="title"><?php echo $advertiser->Name;?></td>
+	<td><?php echo date('m/d/Y', strtotime($advertiser->CreatedDate));?></td>
+	<td class="services">
 	<ul>
 	<?php foreach($advertiser->getServices() as $service):?>
-	<li><a href="<?php echo $service->URL;?>"><?php echo $service->Name;?> (<?php echo $service->Type;?>)</a></li>
+	<li><a href="<?php echo $service->URL;?>" class="service service-<?php echo $service->Type;?>" title="<?php echo esc_attr($service->Name);?>"><?php echo $service->Name;?></a></li>
 	<?php endforeach;?>
 	</ul>
 	</td>
-	<td><?php echo $advertiser->Status;?></td>
-	<td>
-		<a href="<?php echo add_query_arg(array('_action' => 'edit', 'id' => $advertiser->id));?>">Edit</a>
-		<?php if ($advertiser->Status == 'Active') {
-			$statusAction = 'deactivate';
-		} else {
-			$statusAction = 'activate';
-		}
-		?>
-		<a href="<?php echo add_query_arg(array('_action' => $statusAction, 'id' => $advertiser->id));?>" onclick="return confirm('Are you sure you want to <?php echo $statusAction;?> this advertiser?')"><?php echo ucwords($statusAction);?></a>
+	<td class="status"><?php echo $advertiser->Status;?></td>
+	<td class="action">
+		<a href="<?php echo add_query_arg(array('_action' => 'edit', 'id' => $advertiser->id, 'updated' => null));?>" class="button">Edit</a>
 	
 	</td>
 	

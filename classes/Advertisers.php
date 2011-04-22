@@ -17,7 +17,7 @@ class NowSpots_Advertisers extends NowSpots_Model {
 	public function setServices($services) {
 		$return = array();
 		foreach ($services as $service) {
-			if ($service['Type'] && $service['Name'] && $service['URL']) {
+			if ($service['Name'] && $service['URL']) {
 				$return[] = $this->setService($service);
 			}
 		}

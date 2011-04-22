@@ -16,12 +16,25 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 		parent::__construct($properties);
 	}
 	
-	public static function create(Array $properties) {
-		if (!$properties['Type']) {
-			throw new NowSpots_Exception('Missing Type');
-		} else {
-			return parent::create($properties);
+	public function save() {
+		if (!$this->Type) {
+			$this->Type = $this->getType($this->URL);
 		}
+		
+		return parent::save();
+	}
+	
+	private function getType($URL) {
+		$parts = parse_url(trim($URL));
+		if (preg_match('/facebook\.com$/', $parts['host'])) {
+			return 'Facebook';
+		} elseif (preg_match('/twitter\.com$/', $parts['host'])) {
+			return 'Twitter';
+		} else {
+			throw new NowSpots_Exception('Missing or unknown type');
+		}
+		
+		
 	}
 	
 	public function refresh() {
@@ -35,9 +48,6 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 			case 'Facebook':
 				$id = $this->parseID($this->URL, $this->Type);
 
-				if (!$id) {
-					throw new NowSpots_Exception('Unable to parse Facebook id from '.$this->URL);
-				}
 				$response = wp_remote_get("http://graph.facebook.com/$id/feed");
 
 				if (!is_wp_error($response)) {
@@ -64,9 +74,6 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 			break;
 			case 'Twitter':
 				$screen_name = $this->parseID($this->URL, $this->Type);
-				if (!$screen_name) {
-					throw new NowSpots_Exception('Unable to parse social media acount id from '.$this->URL);
-				}
 				$response = wp_remote_get('http://api.twitter.com/1/statuses/user_timeline.json?'.http_build_query(array(
 					'screen_name' => $screen_name,
 					'trim_user' => true,
@@ -92,14 +99,18 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 				throw new NowSpots_Exception('Unknown social media type: '.$Type);
 			break;
 		}
+
 		return $updates;
 	}
 	
 	public function parseID($url, $type=false) {
+		if (!$type) {
+			$type = $this->getType($url);
+		}
 	
 		switch (strtolower($type)) {
 			case 'facebook':
-				$parts = parse_url($this->URL);
+				$parts = parse_url($url);
 				
 				$paths = explode('/', $parts['path']);
 				array_shift($paths); // remove root "/"
@@ -119,10 +130,13 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 				} else {
 					$id = false;
 				}
+				if (!$id) {
+					throw new NowSpots_Exception('Unable to parse social media acount id from '.$url);
+				}
 				return $id;
 			break;
 			case 'twitter':
-				$parts = parse_url($this->URL);
+				$parts = parse_url($url);
 				$path = $parts['path'];
 				$frag = $parts['fragment'];
 				if ($path == '/' && $frag) {
@@ -130,10 +144,13 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 				}
 				
 				$screen_name = preg_replace('@^/([^/]*)/?.*@', '$1', $path);
+				if (!$screen_name) {
+					throw new NowSpots_Exception('Unable to parse social media acount id from '.$url);
+				}
 				return $screen_name;
 			break;
 			default:
-				return false;
+				throw new NowSpots_Exception('Unable to parse social media acount id from '.$url);
 			break;
 		}
 	}

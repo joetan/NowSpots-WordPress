@@ -1,10 +1,24 @@
 <?php if (!$submit) $submit = 'Submit'; ?>
-<form method="post">
+
+<div class="wrap">
+<h1 id="nowspots-logo">NowSpots</h1>
+
+<h2 class="nav-tab-wrapper">
+	<a href="<?php echo add_query_arg(array('_action' => null));?>" class="nav-tab">Manage Advertisers</a>
+	<a href="<?php echo add_query_arg(array('_action' => 'add'));?>" class="nav-tab <?php if ($_GET['_action'] == 'add') echo 'nav-tab-active';?>">Add an Advertiser</a>
+</h2>
+
+<?php if ($_GET['_action'] == 'edit'):?>
+<h1>Update <?php echo $advertiser->Name;?></h1>
+
+<?php endif;?>
+
+<form method="post" class="nowspots">
 <input type="hidden" name="_action" value="<?php echo $action;?>" />
 <?php if ($advertiser->id):?><input type="hidden" name="id" value="<?php echo esc_attr($advertiser->id);?>" /><?php endif;?>
 
 <h3>1. Advertiser Basics</h3>
-Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($advertiser->Name);?>" />
+Advertiser Name: <input class="title" type="text" name="Name" value="<?php echo esc_attr($advertiser->Name);?>" />
 
 
 <h3>2. Social media accounts</h3>
@@ -30,8 +44,8 @@ Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($adve
 		<option value="Twitter" <?php if ($service->Type=='Twitter') echo 'selected="SELECTED"';?>>Twitter</option>
 	</select>
 	</td>
-	<td><input type="text" name="SocialMediaAccount[Name][]" value="<?php echo esc_attr($service->Name);?>"></td>
-	<td><input type="text" name="SocialMediaAccount[URL][]" value="<?php echo esc_attr($service->URL);?>"></td>
+	<td><input class="nickname" type="text" name="SocialMediaAccount[Name][]" value="<?php echo esc_attr($service->Name);?>"></td>
+	<td><input class="url" type="text" name="SocialMediaAccount[URL][]" value="<?php echo esc_attr($service->URL);?>"></td>
 	<td>
 	<?php if ($service->Status == 'Active'):?>
 	<input type="button" class="button deactivate"  value="Deactivate" />
@@ -40,6 +54,8 @@ Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($adve
 </tr>
 
 <?php endforeach;?>
+</tbody>
+<tfoot>
 <tr>
 <input type="hidden" name="SocialMediaAccount[id][]" value="">
 <input type="hidden" name="SocialMediaAccount[Status][]" value="">
@@ -50,12 +66,28 @@ Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($adve
 		<option value="Twitter">Twitter</option>
 	</select>
 	</td>
-	<td><input type="text" name="SocialMediaAccount[Name][]"></td>
-	<td><input type="text" name="SocialMediaAccount[URL][]"></td>
-	<td id="duplicate"><input type="button" class="button"  value="Add Another" /></td>
+	<td><input class="nickname" type="text" name="SocialMediaAccount[Name][]"></td>
+	<td><input class="url" type="text" name="SocialMediaAccount[URL][]"></td>
+	<td></td>
 </tr>
-</tbody>
+<tr>
+	<td colspan="4"><input  id="duplicate" type="button" class="button"  value="Add Another" /></td>
+</tr>
+</tfoot>
 </table>
+
+
+<?php if ($_GET['_action'] == 'edit'):?>
+<h3>3. Advertiser Status</h3>
+<p>
+<select name="Status">
+<?php foreach (array('Active', 'Inactive') as $status):?>
+<option value="<?php echo $status;?>" <?php if ($status == $advertiser->Status) echo 'selected="SELECTED"';?>><?php echo $status;?></option>
+<?php endforeach;?>
+</select>
+</p>
+<?php endif;?>
+
 <p>
 <input type="submit" value="<?php echo $submit;?>" class="button button-primary" />
 </p>
@@ -63,18 +95,12 @@ Advertiser Name: <input type="text" name="Name" value="<?php echo esc_attr($adve
 
 <script>
 jQuery(function($) {
-	$('#accounts').find('#duplicate').click(function() {
-		var orig = $(this).closest('tr')
-		
-		var dupe = orig.find('#duplicate').detach();
-		var tr = orig.clone();
-		tr.find(':input').val('')
-		tr.append(dupe);
-		
-		$('#accounts tbody').append(tr);
-	}).end().find('input.deactivate').click(function() {
+	$('#accounts input.deactivate').click(function() {
 		
 		if (confirm('Are you sure you want to deactivate this service?')) $(this).closest('tr').hide().find('input.status').val('Inactive');
 	});
 });
 </script>
+
+
+</div>

@@ -130,7 +130,7 @@ abstract class NowSpots_Model {
     public static function get($id)
     {
         global $wpdb;
-        $data = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".self::getTableName()." WHERE `id` = %s", $id), ARRAY_A);
+        $data = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".self::getTableName()." WHERE `id` = %d", $id), ARRAY_A);
         return new static($data);
         /*
 

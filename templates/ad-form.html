@@ -1,5 +1,17 @@
 <?php if (!$submit) $submit = 'Submit'; ?>
-<form method="post">
+
+<div class="wrap">
+<h1 id="nowspots-logo">NowSpots</h1>
+
+<h2 class="nav-tab-wrapper">
+<a href="<?php echo add_query_arg(array('_action' => null));?>" class="nav-tab">Manage Ads</a>
+<a href="<?php echo add_query_arg(array('_action' => 'add'));?>" class="nav-tab nav-tab-active">Create An Ad</a>
+</h2>
+
+
+
+
+<form method="post"  class="nowspots">
 <input type="hidden" name="_action" value="<?php echo $action;?>" />
 <?php if ($ad->id):?><input type="hidden" name="id" value="<?php echo esc_attr($ad->id);?>" /><?php endif;?>
 
@@ -77,3 +89,5 @@ Headline: <input type="text" name="Ad[Name]" value="<?php echo esc_attr($ad->Nam
 
 </form>
 
+
+</div>

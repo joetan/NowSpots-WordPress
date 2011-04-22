@@ -1,5 +1,12 @@
+#nowspots-logo {
+	display: block;
+	background: url(images/logo.png) no-repeat;
+	height: 50px;
+	text-indent: -10000px;
+}
 table {
-	width: 95%;	
+	margin: 1em 0;
+	width: 100%;	
 }
 table tr.inactive {
 	background: #B80606;
@@ -11,10 +18,58 @@ table tr.inactive td {
 table tr.inactive td a {
 	color: white;
 }
-
-
+table tr td {
+	padding: 0.5em 1em;
+}
 table thead th {
+	padding: 0.5em 1em;
 	text-align: left;
+}
+table tr.odd {
+	background: #eee;
+}
+table .title {
+	width: 80%;
+}
+table .date {
+	white-space: nowrap;
+	text-align: center;
+}
+table .action {
+	white-space: nowrap;
+	padding-left: 1em;
+}
+table th.action {
+	text-align: center;
+}
+table td.action {
+	text-align: right;
+}
+table .service {
+	display: block;
+	float: left;
+	width: 16px;
+	height: 16px;
+	margin: 0 5px 5px 0;
+	background: no-repeat;
+	text-indent: -10000px;
+}
+table .service-Facebook { background-image: url(images/facebook-icon.jpg); }
+table .service-Twitter { background-image: url(images/twitter-icon.gif); }
+
+
+#accounts {
+	width: 70%;
+}
+
+form .nickname {
+	width: 150px;
+}
+form .title {
+	width: 300px;
+}
+form .url {
+	width: 300px;
 }
 
 #AdvertiserImage {

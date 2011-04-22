@@ -53,6 +53,7 @@ class NowSpotsAds {
 		add_action("load-toplevel_page_{$this->_slug}", array(&$this, 'admin_scripts'));
 		foreach ($this->_pages as $page => $name) {
 			add_action("load-{$this->_slug}_page_{$this->_slug}-{$page}", array(&$this, 'admin_scripts'));
+			add_action("load-{$this->_slug}_page_{$this->_slug}-{$page}", array(&$this, "settings_handler_{$page}"));
 		}
 		add_action("load-{$this->_slug}_page_{$this->_slug}-ads", 'add_thickbox');
 //		$baseurl = plugins_url('', __FILE__);
@@ -117,11 +118,17 @@ class NowSpotsAds {
 			echo 'Updating '.$advertiser->Name.'...<br />';
 			foreach ($services as $service) {
 				echo 'Fetching '.$service->Name.' ('.$service->URL.') ';
-				if ($updates = $service->refresh()) {
-					echo 'Done';
-				} else {
-					echo 'Done, but no updates found.';
+				try {
+					if ($updates = $service->refresh()) {
+						echo 'Done.';
+					} else {
+						echo 'Done, but no updates found.';
+					}
+				} catch (NowSpots_Exception $e) {
+					echo 'ERROR: '.$e->getMessage();
+					error_log($e->getMessage());
 				}
+				
 				echo '<br />';
 				flush();
 			}
@@ -156,9 +163,9 @@ class NowSpotsAds {
 		
 		include(NOWSPOTS_TEMPLATES_DIR.'index.html');
 	}
-	function settings_advertisers() {
+	
+	function settings_handler_advertisers() {
 		require_once NOWSPOTS_CLASSES_DIR.'Advertisers.php';
-		
 		if ($_POST) {
 			switch ($_POST['_action']) {
 				case 'new':
@@ -172,23 +179,30 @@ class NowSpotsAds {
 					
 					$accounts = $this->post_vars('SocialMediaAccount');
 					$advertiser->setServices($accounts);
-					echo 'Done';
+					wp_redirect(add_query_arg(array('page' => 'nowspots-ads', '_action' => 'add', 'advertiser-id' => $advertiser->id)));
+					exit;
 				break;
 				case 'save':
 					$fields = array();
-					foreach (array('Name') as $field) {
+					foreach (array('Name', 'Status') as $field) {
 						$fields[$field] = stripslashes($_POST[$field]);
 					}
-					$fields['Status'] = 'Active';
+					if (!$fields['Status']) $fields['Status'] = 'Active';
 					$advertiser = NowSpots_Advertisers::get($_POST['id']);
 					$advertiser->update($fields);
 					
 					$accounts = $this->post_vars('SocialMediaAccount');
 					$advertiser->setServices($accounts);
-					echo 'done';
+					wp_redirect(add_query_arg(array( '_action' => null, 'id' => null, 'updated' => true)));
+					exit;
+					
 				break;
 			}
-		} elseif ($_GET['_action']) {
+		}
+	}
+	function settings_advertisers() {
+		
+		if ($_GET['_action']) {
 			switch ($_GET['_action']) {
 				case 'edit':
 					$advertiser = NowSpots_Advertisers::get($_GET['id']);
@@ -228,7 +242,7 @@ class NowSpotsAds {
 		
 		
 	}
-	function settings_ads() {
+	function settings_handler_ads() {
 		require_once NOWSPOTS_CLASSES_DIR.'Ads.php';
 		require_once NOWSPOTS_CLASSES_DIR.'Advertisers.php';
 		require_once NOWSPOTS_CLASSES_DIR.'Templates.php';
@@ -242,7 +256,8 @@ class NowSpotsAds {
 					}
 					$fields['Status'] = 'Active';
 					$ad = NowSpots_Ads::create($fields);
-					echo 'done';
+					wp_redirect(add_query_arg(array('_action' => 'review', 'id' => $ad->id)));
+					exit;
 					
 				break;
 				case 'save':
@@ -252,18 +267,28 @@ class NowSpotsAds {
 					}
 					$ad = NowSpots_Ads::get($_POST['id']);
 					$ad->update($fields);
-					echo 'done';
+					wp_redirect(add_query_arg(array('_action' => null, 'id' => null)));
+					exit;
 				break;
 			}
 		
-		} elseif ($_GET['_action']) {
+		}
+	}
+	
+	function settings_ads() {
+		 if ($_GET['_action']) {
 			$templates = NowSpots_Templates::getAll();
 			switch ($_GET['_action']) {
 				case 'add':
 					$action = 'new';
 					$submit = 'Create New Ad';
 					$ad = NowSpots_Ads::blank();
-					$advertisers = NowSpots_Advertisers::getAll();
+					if ($_GET['advertiser-id']) {
+						$advertiser = NowSpots_Advertisers::get($_GET['advertiser-id']);
+						$accounts = NowSpots_SocialMediaAccounts::find(array('AdvertiserID' => $advertiser->id));
+					} else {
+						$advertisers = NowSpots_Advertisers::getAll();
+					}
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-form.html');
 				break;
 				case 'edit':
@@ -289,6 +314,9 @@ class NowSpotsAds {
 			$ads = NowSpots_Ads::getAll();
 			include(NOWSPOTS_TEMPLATES_DIR.'ads.html');
 		}
+	}
+	
+	function settings_handler_updates() {
 	}
 	function settings_updates() {
 		require_once NOWSPOTS_CLASSES_DIR.'SocialUpdates.php';

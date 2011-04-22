@@ -1,3 +1,8 @@
+<?php
+if (count($accounts) == 1) {
+	$ad->SocialMediaAccountID = $accounts[0]->id;
+}
+?>
 <?php foreach ($accounts as $account):?>
 <label><input type="radio" name="Ad[SocialMediaAccountID]" <?php if ($account->id == $ad->SocialMediaAccountID) echo 'checked="checked"';?> value="<?php echo $account->id;?>" > <?php echo $account->Name;?>  &ndash; <?php echo $account->URL;?> </label><br />
 <?php endforeach;?>

@@ -1,25 +1,30 @@
 <div class="wrap">
-<h2>Ads</h2>
-<a href="<?php echo add_query_arg(array('_action' => 'add'));?>" class="button button-primary">Create New Ad</a>
+<h1 id="nowspots-logo">NowSpots</h1>
+
+<h2 class="nav-tab-wrapper">
+<a href="<?php echo add_query_arg(array('_action' => null));?>" class="nav-tab nav-tab-active">Manage Ads</a>
+<a href="<?php echo add_query_arg(array('_action' => 'add'));?>" class="nav-tab">Create An Ad</a>
+</h2>
+
 
 <table id="ads" cellspacing="0" cellpadding="0">
 <thead>
-<th>Headline</th>
-<th>Created</th>
+<th class="title">Headline</th>
+<th class="date">Created</th>
 <th>Template</th>
 <th>Status</th>
-<th>Action</th>
+<th class="action">Action</th>
 </thead>
 <tbody>
 <?php foreach ($ads as $ad):?>
-<tr>
-	<td><a href="<?php echo add_query_arg(array('_action' => 'review', 'id' => $ad->id));?>"><?php echo $ad->Name;?></a></td>
-	<td><?php echo $ad->CreatedDate;?></td>
+<tr class="<?php echo ($odd = !$odd) ? 'odd' : '';?>">
+	<td class="title"><a href="<?php echo add_query_arg(array('_action' => 'review', 'id' => $ad->id));?>"><?php echo $ad->Name;?></a></td>
+	<td class="date"><?php echo date('m/d/Y', strtotime($ad->CreatedDate));?></td>
 	<td><?php echo $ad->Template;?></td>
 	<td><?php echo $ad->Status;?></td>
-	<td>
-	<a href="<?php echo add_query_arg(array('_action' => 'edit', 'id' => $ad->id));?>">Edit</a>
-	<a href="<?php echo add_query_arg(array('_action' => 'review', 'id' => $ad->id));?>">Review</a>
+	<td class="action">
+	<a href="<?php echo add_query_arg(array('_action' => 'review', 'id' => $ad->id, 'updated' => null));?>" class="button">Review</a>
+	<a href="<?php echo add_query_arg(array('_action' => 'edit', 'id' => $ad->id, 'updated' => null));?>" class="button">Edit</a>
 	</td>
 </tr>
 <?php endforeach;?>

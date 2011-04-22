@@ -37,7 +37,16 @@ jQuery(function($) {
 		}, 'html');
 	});
 	
-	
+	$('#duplicate').click(function() {
+		var orig = $(this).closest('tfoot').find('tr:first');
+		var tbody = $(this).closest('table').find('tbody');
+		
+		//var dupe = orig.find('#duplicate').detach();
+		var tr = orig.clone();
+		orig.find(':input').val('')
+		///tr.append(dupe);
+		tbody.append(tr);
+	})
 	
 });
 
