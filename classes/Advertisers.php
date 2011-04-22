@@ -5,10 +5,14 @@ class NowSpots_Advertisers extends NowSpots_Model {
 	public 
 		$Name;
 		
+	private static $className = 'NowSpots_Advertisers';
+		
+		
+		
 	public function getServices() {
 		require_once NOWSPOTS_CLASSES_DIR.'Social.php';
 		
-		return NowSpots_SocialMediaAccounts::find(array(
+		return NowSpots::find('NowSpots_SocialMediaAccounts', array(
 			'AdvertiserID' => $this->getID(),
 			'Status' => 'Active',
 		));
@@ -28,12 +32,12 @@ class NowSpots_Advertisers extends NowSpots_Model {
 		$params['AdvertiserID'] = $this->getID();
 		require_once NOWSPOTS_CLASSES_DIR.'Social.php';
 		if ($params['id']) {
-			$service = NowSpots_SocialMediaAccounts::get($params['id']);
+			$service = NowSpots::get('NowSpots_SocialMediaAccounts', $params['id']);
 			$service->update($params);
 			
 		} else {
 			$params['Status'] = 'Active';
-			$service = NowSpots_SocialMediaAccounts::create($params);
+			$service = NowSpots::create('NowSpots_SocialMediaAccounts', $params);
 		}
 		return $service;
 	}

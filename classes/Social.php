@@ -9,7 +9,7 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 		$URL,
 		$Data;
 		
-	protected function __construct(Array $properties) {
+	public function __construct(Array $properties) {
 		if (!isset($properties['Data'])) {
 			$properties['Data'] = '';
 		}

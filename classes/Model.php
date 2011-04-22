@@ -21,9 +21,10 @@ abstract class NowSpots_Model {
      
     public $id, $Status, $CreatedDate, $ModifiedDate;
     
+	private static $className;
 
-    protected function __construct(Array $properties)
-    {
+
+    public function __construct(Array $properties) {
         $reflect = new ReflectionObject($this);
 
         foreach ($reflect->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
@@ -53,47 +54,11 @@ abstract class NowSpots_Model {
     }
 
     /**
-     * Get all class properties
-     *
-     * @return string[]
-     */
-    protected static function getFields()
-    {
-        static $fields = array();
-        $called_class  = get_called_class();
-
-        if (!array_key_exists($called_class, $fields)) {
-            $reflection_class = new ReflectionClass($called_class);
-
-            $properties = array();
-
-            foreach ($reflection_class->getProperties() as $property) {
-                $properties[] = $property->name;
-            }
-
-            $fields[$called_class] = $properties;
-        }
-
-        return $fields[$called_class];
-    }
-
-    /**
-     * Get the select statement
-     *
-     * @return string
-     */
-    protected static function getSelect()
-    {
-        return "SELECT " . implode(', ', self::getFields()) . " FROM " . self::getTableName();
-    }
-
-    /**
      * Save this object
      *
      * @return void
      */
-    protected function save()
-    {
+    protected function save() {
         global $wpdb;
 
 		$data = array();
@@ -103,152 +68,19 @@ abstract class NowSpots_Model {
 		}
 		
         $wpdb->replace(self::getTableName(), $data);
-        /*
-        
-        $replace  = "REPLACE INTO " . self::getTableName() . "(" . implode(',', $fields) . ")";
 
-        $function = function ($value) {
-            return ':' . $value;
-        };
-
-        $replace .= " VALUES (" . implode(',', array_map($function, $fields)) . ")";
-
-        $statement = $db->prepare($replace);
-
-        foreach ($fields as $field) {
-            $statement->bindParam($field, $this->$field);
-        }
-
-        $statement->execute();
-        */
     }
 
-    /**
-     * Get a single object by id
-     *
-     * @param integer $id
-     * @return Object
-     */
-    public static function get($id)
-    {
-        global $wpdb;
-        $data = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".self::getTableName()." WHERE `id` = %d", $id), ARRAY_A);
-        return new static($data);
-        /*
 
-        $select    = self::getSelect() . " WHERE `id` = :id";
-        $statement = $db->prepare($select);
 
-        $statement->bindParam(':id', $id, PDO::PARAM_INT);
-        $statement->execute();
-
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-
-        return new static($result[0]);
-        */
-    }
-
-    /**
-     * Get all objects
-     *
-     * @return Object[]
-     */
-    public static function getAll()
-    {
-        global $wpdb;
-        $return = array();
-        $results = $wpdb->get_results("SELECT * FROM ".self::getTableName(), ARRAY_A);
-        foreach ($results as $row) {
-        	$return[] = new static($row);
-        }
-        return $return;
-        /*
-
-        $return = array();
-        foreach ($db->query(self::getSelect(), PDO::FETCH_ASSOC) as $row) {
-            $return[] = new static($row);
-        }
-
-        return $return;
-        */
-    }
-    
-    
-    public static function find($params) {
-    	global $wpdb;
-    	$return = array();
-    	$where = 'WHERE true ';
-    	foreach ($params as $field => $val) {
-    		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
-    	}
-		$results = $wpdb->get_results("SELECT * FROM ".self::getTableName() .' '. $where, ARRAY_A);
-		foreach ($results as $row) {
-			$return[] = new static($row);
-		}
-		return $return;
-    }
-    
-    
-    public static function fetch_recent($params=array(), $limit=10) {
-    	global $wpdb;
-    	$return = array();
-    	
-    	$where = 'WHERE true ';
-    	foreach ($params as $field => $val) {
-    		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
-    	}
-    	
-    	$sql = $wpdb->prepare("SELECT * FROM ".self::getTableName() . " $where ORDER BY CreatedDate DESC, id DESC LIMIT $limit");
-    	$results = $wpdb->get_results($sql, ARRAY_A);
-    	
-    	foreach ($results as $row) {
-    		$return[] = new static($row);
-    	}
-    	return $return;
-    }
-    public static function fetch_most_recent($params) {
-    	if ($rows = self::fetch_recent($params, 1)) {
-	    	return $rows[0];
-    	} else {
-    		return null;
-    	}
-    }
     
     
     public function getID() {
     	return $this->id;
     }
 
-	/**
-     * Create a new blank default object
-     *
-     * @param mixed[] $properties Properties
-     * 
-     * @return Object
-     */
-    public static function blank()
-    {
-    	$properties = array_fill_keys(self::getFields(), null);
-		return new static($properties);
-    }
-    /**
-     * Create a new object
-     *
-     * @param mixed[] $properties Properties
-     * 
-     * @return Object
-     */
-    public static function create(Array $properties)
-    {
-        global $wpdb;
-
-        $object = new static($properties);
-        $object->save();
-        if ($wpdb->insert_id) {
-        	$object->id = $wpdb->insert_id;
-        }
-        return $object;
-    }
+	
+    
 
     /**
      * Update an object
@@ -292,17 +124,144 @@ abstract class NowSpots_Model {
      *
      * @return void
      */
-    public function delete()
-    {
+    public function delete() {
         global $wpdb;
 
-		return $wpdb->query($wpdb->prepare( "DELETE FROM " . self::getTableName() . " WHERE `id` = %s", $this->id));
+		return $wpdb->query($wpdb->prepare( "DELETE FROM " . NowSpots::getTableName($this->className) . " WHERE `id` = %s", $this->id));
     }
     
-    private function getTableName() {
-    	global $wpdb;
-    	return $wpdb->prefix . preg_replace('/NowSpots_/', 'nowspots_', get_called_class());
-    }
 }
 
+class NowSpots {
 
+    /**
+     * Get all class properties
+     *
+     * @return string[]
+     */
+    protected static function getFields($className)
+    {
+        static $fields = array();
+        $called_class  = $className;
+
+        if (!array_key_exists($called_class, $fields)) {
+            $reflection_class = new ReflectionClass($called_class);
+
+            $properties = array();
+
+            foreach ($reflection_class->getProperties() as $property) {
+                $properties[] = $property->name;
+            }
+
+            $fields[$called_class] = $properties;
+        }
+
+        return $fields[$called_class];
+    }
+
+    /**
+     * Get all objects
+     *
+     * @return Object[]
+     */
+    public static function getAll($className) {
+        global $wpdb;
+        $return = array();
+        $results = $wpdb->get_results("SELECT * FROM ".self::getTableName($className), ARRAY_A);
+        foreach ($results as $row) {
+        	$return[] = new $className($row);
+        }
+        return $return;
+    }
+    
+    
+    public static function find($className, $params) {
+    	global $wpdb;
+    	$return = array();
+    	$where = 'WHERE true ';
+    	foreach ($params as $field => $val) {
+    		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
+    	}
+		$results = $wpdb->get_results("SELECT * FROM ".self::getTableName($className) .' '. $where, ARRAY_A);
+		foreach ($results as $row) {
+			$return[] = new $className($row);
+		}
+		return $return;
+    }
+    
+    
+    public static function fetch_recent($className, $params=array(), $limit=10) {
+    	global $wpdb;
+    	$return = array();
+    	
+    	$where = 'WHERE true ';
+    	foreach ($params as $field => $val) {
+    		$where .= $wpdb->prepare(" AND `$field` = %s", $val);
+    	}
+    	
+    	$sql = $wpdb->prepare("SELECT * FROM ".self::getTableName($className) . " $where ORDER BY CreatedDate DESC, id DESC LIMIT $limit");
+    	$results = $wpdb->get_results($sql, ARRAY_A);
+    	
+    	foreach ($results as $row) {
+    		$return[] = new $className($row);
+    	}
+    	return $return;
+    }
+    public static function fetch_most_recent($className, $params) {
+    	if ($rows = self::fetch_recent($className, $params, 1)) {
+	    	return $rows[0];
+    	} else {
+    		return null;
+    	}
+    }
+    
+
+	/**
+	 * Create a new blank default object
+	 *
+	 * @param mixed[] $properties Properties
+	 * 
+	 * @return Object
+	 */
+	public static function blank($className) {
+		$properties = array_fill_keys(self::getFields(), null);
+		return new $className($properties);
+	}
+	
+
+	/**
+     * Create a new object
+     *
+     * @param mixed[] $properties Properties
+     * 
+     * @return Object
+     */
+    public static function create($className, Array $properties) {
+        global $wpdb;
+
+        $object = new $className($properties);
+        $object->save();
+        if ($wpdb->insert_id) {
+        	$object->id = $wpdb->insert_id;
+        }
+        return $object;
+    }
+    
+    
+    /**
+     * Get a single object by id
+     *
+     * @param integer $id
+     * @return Object
+     */
+    public static function get($className, $id) {
+        global $wpdb;
+        $data = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".self::getTableName($className)." WHERE `id` = %d", $id), ARRAY_A);
+        return new $className($data);
+
+    }
+	private function getTableName($className) {
+		global $wpdb;
+		return $wpdb->prefix . preg_replace('/NowSpots_/', 'nowspots_', $className);
+	}
+}

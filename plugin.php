@@ -207,20 +207,20 @@ class NowSpotsAds {
 		if ($_GET['_action']) {
 			switch ($_GET['_action']) {
 				case 'edit':
-					$advertiser = NowSpots_Advertisers::get($_GET['id']);
+					$advertiser = NowSpots::get('NowSpots_Advertisers', $_GET['id']);
 					$action = 'save';
 					$submit = 'Save Advertiser Information';
 					include(NOWSPOTS_TEMPLATES_DIR.'advertiser-form.html');
 					
 				break;
 				case 'deactivate':
-					$advertiser = NowSpots_Advertisers::get($_GET['id']);
+					$advertiser = NowSpots::get('NowSpots_Advertisers', $_GET['id']);
 					$advertiser->update('Status', 'Inactive');
 					$message = 'Deactivated '.$advertiser->AdvertiserName;
 					echo 'Done';
 				break;
 				case 'activate':
-					$advertiser = NowSpots_Advertisers::get($_GET['id']);
+					$advertiser = NowSpots::get('NowSpots_Advertisers', $_GET['id']);
 					$advertiser->update('Status', 'Active');
 					$message = 'Activated '.$advertiser->AdvertiserName;;
 					echo 'Done';
@@ -238,7 +238,7 @@ class NowSpotsAds {
 			}
 		} else {
 			
-			$advertisers = NowSpots_Advertisers::getAll();
+			$advertisers = NowSpots::getAll('NowSpots_Advertisers');
 			include(NOWSPOTS_TEMPLATES_DIR.'advertisers.html');
 		}
 		
