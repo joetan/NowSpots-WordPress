@@ -8,6 +8,8 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 		$Name,
 		$URL,
 		$Data;
+
+	protected $className = 'NowSpots_SocialMediaAccounts';
 		
 	public function __construct(Array $properties) {
 		if (!isset($properties['Data'])) {
@@ -60,7 +62,7 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 					}
 
 					foreach ($statuses as $status) {
-						$updates[] = NowSpots_SocialMediaAccountUpdates::create(array(
+						$updates[] = NowSpots::create('NowSpots_SocialMediaAccountUpdates', array(
 							'AdvertiserID' => $this->AdvertiserID,
 							'SocialMediaAccountID' => $this->getID(),
 							'UpdateID' => $status->id,
@@ -83,7 +85,7 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 					$data = wp_remote_retrieve_body($response);
 					$statuses = json_decode($data);
 					foreach ($statuses as $status) {
-						$updates[] = NowSpots_SocialMediaAccountUpdates::create(array(
+						$updates[] = NowSpots::create('NowSpots_SocialMediaAccountUpdates', array(
 							'AdvertiserID' => $this->AdvertiserID,
 							'SocialMediaAccountID' => $this->getID(),
 							'UpdateID' => $status->id_str,

@@ -21,7 +21,7 @@ abstract class NowSpots_Model {
      
     public $id, $Status, $CreatedDate, $ModifiedDate;
     
-	private static $className;
+	protected $className = '';
 
 
     public function __construct(Array $properties) {
@@ -58,16 +58,15 @@ abstract class NowSpots_Model {
      *
      * @return void
      */
-    protected function save() {
+    public function save() {
         global $wpdb;
-
 		$data = array();
-		$fields = self::getFields();
+		$fields = NowSpots::getFields($this->className);
 		foreach ($fields as $field) {
 			$data[$field] = trim($this->$field);
 		}
 		
-        $wpdb->replace(self::getTableName(), $data);
+        $wpdb->replace(NowSpots::getTableName($this->className), $data);
 
     }
 
@@ -100,7 +99,7 @@ abstract class NowSpots_Model {
 	    } elseif (property_exists($this, $properties)) {
 	    	$this->$properties = $val;
 	    }
-        $this->save();
+		$this->save();
     }
 
     /**
@@ -139,8 +138,7 @@ class NowSpots {
      *
      * @return string[]
      */
-    protected static function getFields($className)
-    {
+    public static function getFields($className) {
         static $fields = array();
         $called_class  = $className;
 
@@ -149,7 +147,7 @@ class NowSpots {
 
             $properties = array();
 
-            foreach ($reflection_class->getProperties() as $property) {
+            foreach ($reflection_class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
                 $properties[] = $property->name;
             }
 
@@ -224,7 +222,7 @@ class NowSpots {
 	 * @return Object
 	 */
 	public static function blank($className) {
-		$properties = array_fill_keys(self::getFields(), null);
+		$properties = array_fill_keys(self::getFields($className), null);
 		return new $className($properties);
 	}
 	
@@ -260,7 +258,7 @@ class NowSpots {
         return new $className($data);
 
     }
-	private function getTableName($className) {
+	public static function getTableName($className) {
 		global $wpdb;
 		return $wpdb->prefix . preg_replace('/NowSpots_/', 'nowspots_', $className);
 	}

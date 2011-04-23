@@ -11,6 +11,7 @@ class NowSpots_SocialMediaAccountUpdates extends NowSpots_Model {
 		$URL;
 		
 	
+	protected $className = 'NowSpots_SocialMediaAccountUpdates';
 	
 	
 

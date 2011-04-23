@@ -1,5 +1,7 @@
 <?php
 class NowSpots_Templates {
+	protected $className = 'NowSpots_Templates';
+
 	public function getAll() {
 		return array(
 			'box' => 'Box 300x250',

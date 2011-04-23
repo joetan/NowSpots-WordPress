@@ -5,7 +5,7 @@ class NowSpots_Advertisers extends NowSpots_Model {
 	public 
 		$Name;
 		
-	private static $className = 'NowSpots_Advertisers';
+	protected $className = 'NowSpots_Advertisers';
 		
 		
 		

@@ -104,7 +104,7 @@ class NowSpotsAds {
 		require_once NOWSPOTS_CLASSES_DIR.'Social.php';
 		$id = (int) $_POST['AdvertiserID'];
 		if ($id) {
-			$accounts = NowSpots_SocialMediaAccounts::find(array('AdvertiserID' => $id));
+			$accounts = NowSpots::find('NowSpots_SocialMediaAccounts', array('AdvertiserID' => $id));
 			include(NOWSPOTS_TEMPLATES_DIR.'ad-form-accounts.html');
 		} else {
 			echo 'Error loading.';
@@ -114,7 +114,7 @@ class NowSpotsAds {
 	
 	function ajax_refresh() {
 		require_once NOWSPOTS_CLASSES_DIR.'Advertisers.php';
-		$advertisers = NowSpots_Advertisers::getAll();
+		$advertisers = NowSpots::getAll('NowSpots_Advertisers');
 		foreach ($advertisers as $advertiser) {
 			$services = $advertiser->getServices();
 			echo 'Updating '.$advertiser->Name.'...<br />';
@@ -152,7 +152,7 @@ class NowSpotsAds {
 			$active = 'Inactive';
 		}
 		require_once NOWSPOTS_CLASSES_DIR.'SocialUpdates.php';
-		$update = NowSpots_SocialMediaAccountUpdates::get($_POST['id']);
+		$update = NowSpots::get('NowSpots_SocialMediaAccountUpdates', $_POST['id']);
 		$update->update('Status', $active);
 		echo json_encode(array(
 			'active' => $active == 'Active',
@@ -177,7 +177,7 @@ class NowSpotsAds {
 						$fields[$field] = stripslashes($_POST[$field]);
 					}
 					$fields['Status'] = 'Active';
-					$advertiser = NowSpots_Advertisers::create($fields);
+					$advertiser = NowSpots::create('NowSpots_Advertisers', $fields);
 					
 					$accounts = $this->post_vars('SocialMediaAccount');
 					$advertiser->setServices($accounts);
@@ -190,7 +190,7 @@ class NowSpotsAds {
 						$fields[$field] = stripslashes($_POST[$field]);
 					}
 					if (!$fields['Status']) $fields['Status'] = 'Active';
-					$advertiser = NowSpots_Advertisers::get($_POST['id']);
+					$advertiser = NowSpots::get('NowSpots_Advertisers', $_POST['id']);
 					$advertiser->update($fields);
 					
 					$accounts = $this->post_vars('SocialMediaAccount');
@@ -226,13 +226,13 @@ class NowSpotsAds {
 					echo 'Done';
 				break;
 				case 'add':
-					$advertiser = NowSpots_Advertisers::blank();
+					$advertiser = NowSpots::blank('NowSpots_Advertisers');
 					$action = 'new';
 					$submit = 'Add this Advertiser';
 					include(NOWSPOTS_TEMPLATES_DIR.'advertiser-form.html');
 				break;
 				case 'statuses':
-					$advertiser = NowSpots_Advertisers::get($_GET['id']);
+					$advertiser = NowSpots::get('NowSpots_Advertisers', $_GET['id']);
 					$updates = $advertiser->getStatusUpdates();
 				break;
 			}
@@ -257,7 +257,7 @@ class NowSpotsAds {
 						$fields[$field] = stripslashes($_POST['Ad'][$field]);
 					}
 					$fields['Status'] = 'Active';
-					$ad = NowSpots_Ads::create($fields);
+					$ad = NowSpots::create('NowSpots_Ads', $fields);
 					wp_redirect(add_query_arg(array('_action' => 'review', 'id' => $ad->id)));
 					exit;
 					
@@ -267,7 +267,7 @@ class NowSpotsAds {
 					foreach (array('AdvertiserID', 'SocialMediaAccountID', 'Name', 'Template', 'Image', 'Status') as $field) {
 						$fields[$field] = stripslashes($_POST['Ad'][$field]);
 					}
-					$ad = NowSpots_Ads::get($_POST['id']);
+					$ad = NowSpots::get('NowSpots_Ads', $_POST['id']);
 					$ad->update($fields);
 					wp_redirect(add_query_arg(array('_action' => null, 'id' => null)));
 					exit;
@@ -284,36 +284,36 @@ class NowSpotsAds {
 				case 'add':
 					$action = 'new';
 					$submit = 'Create New Ad';
-					$ad = NowSpots_Ads::blank();
+					$ad = NowSpots::blank('NowSpots_Ads');
 					if ($_GET['advertiser-id']) {
-						$advertiser = NowSpots_Advertisers::get($_GET['advertiser-id']);
-						$accounts = NowSpots_SocialMediaAccounts::find(array('AdvertiserID' => $advertiser->id));
+						$advertiser = NowSpots::get('NowSpots_Advertisers', $_GET['advertiser-id']);
+						$accounts = NowSpots::find('NowSpots_SocialMediaAccounts', array('AdvertiserID' => $advertiser->id));
 					} else {
-						$advertisers = NowSpots_Advertisers::getAll();
+						$advertisers = NowSpots::getAll('NowSpots_Advertisers');
 					}
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-form.html');
 				break;
 				case 'edit':
 					$action = 'save';
 					$submit = 'Save Ad';
-					$ad = NowSpots_Ads::get($_GET['id']);
+					$ad = NowSpots::get('NowSpots_Ads', $_GET['id']);
 					if ($ad->AdvertiserID) {
-						$advertiser = NowSpots_Advertisers::get($ad->AdvertiserID);
-						$accounts = NowSpots_SocialMediaAccounts::find(array('AdvertiserID' => $ad->AdvertiserID));
+						$advertiser = NowSpots::get('NowSpots_Advertisers', $ad->AdvertiserID);
+						$accounts = NowSpots::find('NowSpots_SocialMediaAccounts', array('AdvertiserID' => $ad->AdvertiserID));
 					} else {
-						$advertisers = NowSpots_Advertisers::getAll();
+						$advertisers = NowSpots::getAll('NowSpots_Advertisers');
 					}
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-form.html');
 				break;
 				case 'review';
-					$ad = NowSpots_Ads::get($_GET['id']);
+					$ad = NowSpots::get('NowSpots_Ads', $_GET['id']);
 					$updates = $ad->getAllRecentUpdates();
 					include(NOWSPOTS_TEMPLATES_DIR.'ad-review.html');
 					include(NOWSPOTS_TEMPLATES_DIR.'updates.html');
 				break;
 			}
 		} else {
-			$ads = NowSpots_Ads::getAll();
+			$ads = NowSpots::getAll('NowSpots_Ads');
 			include(NOWSPOTS_TEMPLATES_DIR.'ads.html');
 		}
 	}
@@ -322,7 +322,7 @@ class NowSpotsAds {
 	}
 	function settings_updates() {
 		require_once NOWSPOTS_CLASSES_DIR.'SocialUpdates.php';
-		$updates = NowSpots_SocialMediaAccountUpdates::fetch_recent();
+		$updates = NowSpots::fetch_recent('NowSpots_SocialMediaAccountUpdates');
 		
 		include(NOWSPOTS_TEMPLATES_DIR.'updates.html');
 	}
@@ -422,7 +422,7 @@ class NowSpots_Widget extends WP_Widget {
 	}
 	function form($instance) {
 		require_once NOWSPOTS_CLASSES_DIR.'Ads.php';
-		$ads = NowSpots_Ads::getAll();
+		$ads = NowSpots::getAll('NowSpots_Ads');
 		?>
 		<label for="<?php echo $this->get_field_id('ad_id'); ?>">Select ad to display:</label> <br />
 		<select name="<?php echo $this->get_field_name('ad_id'); ?>">
@@ -445,7 +445,7 @@ function nowspot_ad($ad_id, $template=false) {
 function nowspot_get_ad($ad_id, $template=false) {
 	require_once NOWSPOTS_CLASSES_DIR.'Ads.php';
 
-	$ad = NowSpots_Ads::get($ad_id);
+	$ad = NowSpots::get('NowSpots_Ads', $ad_id);
 	if ($ad->Status != 'Active') return;
 	
 	$html = $ad->render($template);
