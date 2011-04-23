@@ -3,6 +3,41 @@ if (count($accounts) == 1) {
 	$ad->SocialMediaAccountID = $accounts[0]->id;
 }
 ?>
+
+<h3>1a. Select Social Media Account</h3>
+
+
 <?php foreach ($accounts as $account):?>
 <label><input type="radio" name="Ad[SocialMediaAccountID]" <?php if ($account->id == $ad->SocialMediaAccountID) echo 'checked="checked"';?> value="<?php echo $account->id;?>" > <?php echo $account->Name;?>  &ndash; <?php echo $account->URL;?> </label><br />
 <?php endforeach;?>
+
+
+
+<h3>1b. Select Image</h3>
+
+
+<ul id="AdvertiserImage">
+<?php foreach ($accounts as $account) if ($imgsrc = $account->getProfileImageSrc()):?>
+<li class="<?php echo $account->Type;?>">
+<label>
+	<span class="img"><img src="<?php echo $imgsrc;?>" style="max-width:140px" /></span>
+<input type="radio" name="Ad[Image]" class="radio" value="<?php echo $account->getProfileImageSrc();?>">
+</label>
+</li>
+	
+<?php endif;?>
+<li>
+<label>
+<input type="radio" name="Ad[Image]" id="custom-image" class="radio" value="<?php echo esc_attr($ad->Image);?>">
+<span class="img" id="custom-image-preview">
+<?php if ($ad->Image):?>
+	<img src="<?php echo $ad->Image;?>" />
+<?php else:?>
+	Use a custom image
+<?php endif;?>
+</span>
+</label>
+<a href="media-upload.php?post_id=0&selection=nowspots&TB_iframe=1&width=650" class="button thickbox" id="select_image" title="Select Image...">Select Image...</a>
+</li>
+
+</ul>

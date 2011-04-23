@@ -26,19 +26,6 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 		return parent::save();
 	}
 	
-	private function getType($URL) {
-		$parts = parse_url(trim($URL));
-		if (preg_match('/facebook\.com$/', $parts['host'])) {
-			return 'Facebook';
-		} elseif (preg_match('/twitter\.com$/', $parts['host'])) {
-			return 'Twitter';
-		} else {
-			throw new NowSpots_Exception('Missing or unknown type');
-		}
-		
-		
-	}
-	
 	public function refresh() {
 		require_once NOWSPOTS_CLASSES_DIR.'SocialUpdates.php';
 		
@@ -104,7 +91,26 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 
 		return $updates;
 	}
-	
+	public function getProfileImageSrc() {
+		try {
+			switch ($this->Type) {
+				case 'Facebook':
+					return 'http://graph.facebook.com/'.$this->getAccountID().'/picture?type=large';
+				break;
+				case 'Twitter':
+					return 'http://api.twitter.com/1/users/profile_image/'.$this->getAccountID().'.xml';
+				break;
+				default:
+					return null;
+				break;
+			}
+		} catch (NowSpots_Exception $e) {
+			return null;
+		}
+	}
+	public function getAccountID() {
+		return $this->parseID($this->URL, $this->Type);
+	}
 	public function parseID($url, $type=false) {
 		if (!$type) {
 			$type = $this->getType($url);
@@ -155,6 +161,18 @@ class NowSpots_SocialMediaAccounts extends NowSpots_Model {
 				throw new NowSpots_Exception('Unable to parse social media acount id from '.$url);
 			break;
 		}
+	}
+	private function getType($URL) {
+		$parts = parse_url(trim($URL));
+		if (preg_match('/facebook\.com$/', $parts['host'])) {
+			return 'Facebook';
+		} elseif (preg_match('/twitter\.com$/', $parts['host'])) {
+			return 'Twitter';
+		} else {
+			throw new NowSpots_Exception('Missing or unknown type');
+		}
+		
+		
 	}
 	
 	

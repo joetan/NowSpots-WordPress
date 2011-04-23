@@ -55,10 +55,10 @@ function set_upload_selection(url, sid, attachment_id) {
 	if (url) {
 	var $ = jQuery;
 	
-		$('#Image').val(url);
+		$('#custom-image').val(url);
 		var img = new Image();
 		$(img).attr('src', url).attr('id', 'img');
-		$('#img').replaceWith(img);
+		$('#custom-image-preview').html(img);
 		
 	}
 }
